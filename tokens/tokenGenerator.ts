@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 class TokenGenerator {
 
     generateAccessToken(email: string) {
-        return jwt.sign({ payload: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+        return jwt.sign({ payload: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' });
     }
 
     generateRefreshToken(email: string) {

@@ -20,15 +20,16 @@ router.post('/login', async (req, res) => {
             const accessToken = tokenGenerator.generateAccessToken(email);
             const refreshToken = tokenGenerator.generateRefreshToken(email);
 
-            res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 1000 * 60 * 60 * 24 });
+            res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false, sameSite: "lax", maxAge: 1000 * 60 * 60 * 24 * 7 });
             res.status(200).json({
                 accessToken,
-                email,
+                username: user.username,
+                email: user.email,
             })
         }
     } catch (err) {
         console.log(err)
-        res.status(500).send({ message: err.message });
+        res.status(500).send({ msg: err.message });
     }
 })
 
@@ -54,7 +55,7 @@ router.get('/refresh', async (req, res) => {
         }
     } catch (err) {
         console.log(err)
-        res.status(500).send({ message: err.message });
+        res.status(500).send({ msg: err.message });
     }
 })
 
@@ -62,13 +63,13 @@ router.delete('/logout', async (req, res) => {
     try {
         res.clearCookie('refreshToken', {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none'
+            secure: false,
+            sameSite: 'lax'
         });
         res.status(204).json({ msg: "Logged out." });
     } catch (err) {
         console.log(err)
-        res.status(500).send({ message: err.message });
+        res.status(500).send({ msg: err.message });
     }
 })
 

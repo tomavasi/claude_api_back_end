@@ -4,9 +4,10 @@ const prisma = new PrismaClient();
 
 class DBUserService {
 
-    async createUser(password: string, email: string): Promise<User> {
+    async createUser(password: string, email: string, username: string): Promise<User> {
         const user = await prisma.user.create({
             data: {
+                username,
                 password,
                 email,
             },

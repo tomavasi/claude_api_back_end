@@ -39,7 +39,7 @@ router.get('/', jwtVerifier, async (req: Request, res: Response) => {
             }
         } catch (err) {
             console.log(err)
-            res.status(500).send({ message: err.message });
+            res.status(500).send({ msg: err.message });
         }
     }
 })
