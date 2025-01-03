@@ -2,31 +2,40 @@ import express from 'express';
 import bcrypt from "bcrypt";
 import dbUserService from '../services/dbUserService';
 import tokenGenerator from '../tokens/tokenGenerator';
+import emailChecker from '../utils/emailchecker';
 
 const router = express.Router();
 
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await dbUserService.getUserByEmail(email);
-        const isMatch = await bcrypt.compare(password, user.password);
         if (!email || !password) {
             res.status(400).json({ msg: "Not all fields have been entered." });
-        } else if (!user) {
-            res.status(401).json({ msg: "No account with this email has been registered." });
-        } else if (!isMatch) {
-            res.status(401).json({ msg: "Invalid credentials." });
-        } else {
-            const accessToken = tokenGenerator.generateAccessToken(email);
-            const refreshToken = tokenGenerator.generateRefreshToken(email);
-
-            res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false, sameSite: "lax", maxAge: 1000 * 60 * 60 * 24 * 7 });
-            res.status(200).json({
-                accessToken,
-                username: user.username,
-                email: user.email,
-            })
+            return;
         }
+        if (!emailChecker(email)) {
+            res.status(400).json({ msg: "Invalid email." }); // check if email is valid regex
+            return;
+        }
+        const user = await dbUserService.getUserByEmail(email);
+        if (!user) {
+            res.status(401).json({ msg: "No account with this email has been registered." });
+            return;
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            res.status(401).json({ msg: "Invalid credentials." });
+            return;
+        }
+        const accessToken = tokenGenerator.generateAccessToken(email);
+        const refreshToken = tokenGenerator.generateRefreshToken(email);
+
+        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false, sameSite: "lax", maxAge: 1000 * 60 * 60 * 24 * 7 });
+        res.status(200).json({
+            accessToken,
+            username: user.username,
+            email: user.email,
+        })
     } catch (err) {
         console.log(err)
         res.status(500).send({ msg: err.message });

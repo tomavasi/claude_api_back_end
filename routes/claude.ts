@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { claudeApi } from '../claudeApi';
+import { claudeApi } from '../utils/claudeApi';
 import { jwtVerifier } from '../middleware/jwtVerifier';
 
 
@@ -24,7 +24,7 @@ const models = {
     }
 }
 
-router.get('/', jwtVerifier, async (req: Request, res: Response) => {
+router.post('/', jwtVerifier, async (req: Request, res: Response) => {
     const { user_prompt, model_name }: { user_prompt: string, model_name: string } = req.body;
     if (!user_prompt || !model_name) {
         res.status(400).json({ msg: "Not all fields have been entered." });
@@ -34,8 +34,11 @@ router.get('/', jwtVerifier, async (req: Request, res: Response) => {
             if (selectedModel === null) {
                 res.status(404).json({ msg: "Model not found." });
             } else {
+                const start = performance.now();
                 const response = await claudeApi(user_prompt, selectedModel);
-                res.status(200).json(response);
+                const end = performance.now();
+                const reposneObj = { ...response, execTime: end - start };
+                res.status(200).json(reposneObj);
             }
         } catch (err) {
             console.log(err)

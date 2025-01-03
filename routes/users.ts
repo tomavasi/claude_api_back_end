@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import dbUserService from "../services/dbUserService";
 import { jwtVerifier } from "../middleware/jwtVerifier";
+import emailChecker from "../utils/emailchecker";
 
 const router = express.Router();
 
@@ -12,6 +13,12 @@ router.post('/register', async (req: Request, res: Response) => {
             res.status(400).json({
                 success: false,
                 msg: "Not all fields have been entered."
+            });
+        }
+        if (!emailChecker(email)) { // check if email is valid regex
+            res.status(400).json({
+                success: false,
+                msg: "Invalid email."
             });
         }
         const possibleUser = await dbUserService.getUserByEmail(email);
